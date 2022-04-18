@@ -13,5 +13,6 @@
 |
 */
 $router->group(['prefix' => 'api/v1/'], function () use ($router) {
-$router->get('/tasks','TaskController@index' );
+    $router->get('/tasks','TaskController@index' );
+    $router->get('/projects','ProjectController@index');
 });

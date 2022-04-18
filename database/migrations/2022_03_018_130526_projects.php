@@ -9,7 +9,7 @@ class Projects extends Migration{
     public function up(){
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            $table->string('name',240);
+            $table->string('name',240)->unique();
             $table->boolean('deleted');
             $table->timestamps();
         });

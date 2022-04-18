@@ -10,9 +10,9 @@ class Tasks extends Migration{
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->bigInteger('elapsed_time');
-            $table->boolean('running');
-            $table->bigInteger('start_time');
+            $table->bigInteger('elapsed_time')->nullable();
+            $table->boolean('running')->nullable();
+            $table->bigInteger('start_time')->nullable();
             $table->boolean('deleted');
 
             $table->unsignedBigInteger('project_id')->nullable();

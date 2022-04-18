@@ -16,6 +16,7 @@ $router->group(['prefix' => 'api/v1/'], function () use ($router) {
     //<----------------------Task------------------------>
     $router->get('/tasks','TaskController@index' );
     $router->post('/task/create', 'TaskController@store');
+    $router->post('/task/assign', 'TaskController@assign');
     // <---------------------Project--------------------->
     $router->get('/projects','ProjectController@index');
     $router->post('/project/create','ProjectController@store');

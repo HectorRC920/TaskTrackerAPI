@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Project;
 
+use function PHPUnit\Framework\isEmpty;
+
 class ProjectController extends Controller
 {
     public function index()
     {
         $projects = Project::select('*')->get();
         $projects_count = $projects->count();
-        if (!$projects) {
+        if (isEmpty($projects)) {
             return response()->json([
                 'error' => 'No hay proyectos creados',
             ], 404);

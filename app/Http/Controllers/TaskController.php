@@ -1,8 +1,10 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use Illuminate\Http\Request;
 use App\Models\Task;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class TaskController extends Controller{
     public function index()
@@ -37,5 +39,21 @@ class TaskController extends Controller{
             'id' => $task->id,
             'name' => $task->name,
         ],200);
+    }
+    public function assign(Request $request)
+    {
+        try {
+            $project = Project::findOrFail($request->projectId);
+            $task = Task::findOrFail($request->taskId);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => 'No se encontro el proyecto o tarea'
+            ],404);
+        }
+        $task->project_id = $project->id;
+        $task->save();
+        return response()->json([
+            $task,
+        ]);
     }
 }

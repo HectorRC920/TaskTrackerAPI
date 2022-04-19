@@ -56,4 +56,66 @@ class TaskController extends Controller{
             $task,
         ]);
     }
+    public function start($id)
+    {
+        //Check if usere tries to run more than one task
+        $tasks_running = Task::where('running','=',1)->count();
+        if($tasks_running > 1){
+            return response()->json([
+                'error' => 'Solo se puede tener una tarea con timer activo'
+            ]);
+        }
+
+        try {
+            // check if given task exists
+            $task = Task::findOrFail($id);
+            // check if given task is running
+            if($task->running){
+                return response()->json([
+                    'error' => 'El timer de esta tarea ya esta corriendo',
+                ]);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => 'La tarea no fue encontrada'
+            ]);
+        }
+        $task->update([
+            'elapsed_time' => 0,
+            'running' => 1,
+            'start_time' => time()
+        ]);
+        return response()->json([
+            $task
+        ],200);
+    }
+    public function stop($id)
+    {
+        try {
+            // check if given task exists
+            $task = Task::findOrFail($id);
+            $start_time = $task->start_time;
+            $current_time = time();
+            $time_consumed_secs = $current_time - $start_time;
+            // check if given task is not running
+            if(!$task->running){
+                return response()->json([
+                    'error' => 'El timer de esta tarea ya esta parado',
+                ]);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => 'La tarea no fue encontrada'
+            ]);
+        }
+        $task->update([
+            'elapsed_time' => $time_consumed_secs,
+            'running' => 0,
+            'start_time' => $start_time
+        ]);
+        return response()->json([
+            $task
+        ],200);
+
+    }
 }

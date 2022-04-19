@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Project;
+use App\Models\Task;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -13,7 +14,7 @@ class ProjectController extends Controller
     {
         $projects = Project::select('*')->get();
         $projects_count = $projects->count();
-        if (isEmpty($projects)) {
+        if ($projects_count <= 0) {
             return response()->json([
                 'error' => 'No hay proyectos creados',
             ], 404);
@@ -40,6 +41,41 @@ class ProjectController extends Controller
         ]);
         return response()->json([
             $project,
+        ],201);
+    }
+    public function report(Request $request)
+    {
+        $projectId = $request->id;
+        $projectTasks = Task::where('project_id','=',$projectId)->get();
+        $total_time = 0;
+        foreach ($projectTasks as $task) {
+            $total_time += $task->elapsed_time;
+        }
+        return response()->json([
+            'tasks' => $projectTasks,
+            'total_time' => $total_time
+        ]);
+    }
+    public function delete(Request $request)
+    {
+        $projectId = $request->id;
+        try {
+            $project = Project::findOrFail($projectId);
+            if($project->deleted){
+                return response()->json([
+                    'error' => 'El projecto ya esta eliminado'
+                ]);
+            }
+            $project->update([
+                'deleted' => 1
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => 'Projecto no eliminado'
+            ]);
+        }
+        return response()->json([
+            $project
         ]);
     }
 }

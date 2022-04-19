@@ -40,7 +40,7 @@ class TaskController extends Controller
         return response()->json([
             'id' => $task->id,
             'name' => $task->name,
-        ], 200);
+        ], 201);
     }
     public function assign(Request $request)
     {
@@ -58,12 +58,13 @@ class TaskController extends Controller
             $task,
         ]);
     }
-    public function start($id)
+    public function start(Request $request)
     {
         $tasks_running = Task::where('running', '=', 1)->count();
+        $taskId = $request->id;
         try {
             // check if given task exists
-            $task = Task::findOrFail($id);
+            $task = Task::findOrFail($taskId);
             // check if given task is running
             if ($task->running) {
                 return response()->json([
@@ -90,11 +91,12 @@ class TaskController extends Controller
             $task
         ], 200);
     }
-    public function stop($id)
+    public function stop(Request $request)
     {
+        $taskId = $request->id;
         try {
             // check if given task exists
-            $task = Task::findOrFail($id);
+            $task = Task::findOrFail($taskId);
             $start_time = $task->start_time;
             $current_time = time();
             $time_consumed_secs = $current_time - $start_time;
@@ -117,5 +119,27 @@ class TaskController extends Controller
         return response()->json([
             $task
         ], 200);
+    }
+    public function delete(Request $request)
+    {
+        $taskId = $request->id;
+        try {
+            $task = Task::findOrFail($taskId);
+            if($task->deleted){
+                return response()->json([
+                    'error' => 'La tarea ya esta eliminada'
+                ]);
+            }
+            $task->update([
+                'deleted' => 1
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => 'Tarea no encontrada'
+            ]);
+        }
+        return response()->json([
+            $task
+        ]);
     }
 }

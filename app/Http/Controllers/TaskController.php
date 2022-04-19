@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Project;
@@ -6,28 +7,29 @@ use Illuminate\Http\Request;
 use App\Models\Task;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class TaskController extends Controller{
+class TaskController extends Controller
+{
     public function index()
     {
         $tasks = Task::select('*')->get();
         $task_count = $tasks->count();
-        if(!$tasks){
+        if (!$tasks) {
             return response()->json([
                 'error' => 'No hay tareas creadas'
-            ],404);
+            ], 404);
         } else {
             return response()->json([
                 'items' => $tasks,
                 'total' => $task_count,
                 'count' => $task_count,
-            ],200);
+            ], 200);
         }
     }
     public function store(Request $request)
     {
         $this->validate($request, [
             'name' => 'required|unique:tasks',
-        ],[
+        ], [
             'name.unique' => 'El nombre ya esta tomado',
             'name.required' => 'El nombre es requerido'
         ]);
@@ -38,7 +40,7 @@ class TaskController extends Controller{
         return response()->json([
             'id' => $task->id,
             'name' => $task->name,
-        ],200);
+        ], 200);
     }
     public function assign(Request $request)
     {
@@ -48,7 +50,7 @@ class TaskController extends Controller{
         } catch (\Throwable $th) {
             return response()->json([
                 'error' => 'No se encontro el proyecto o tarea'
-            ],404);
+            ], 404);
         }
         $task->project_id = $project->id;
         $task->save();
@@ -58,19 +60,12 @@ class TaskController extends Controller{
     }
     public function start($id)
     {
-        //Check if usere tries to run more than one task
-        $tasks_running = Task::where('running','=',1)->count();
-        if($tasks_running > 1){
-            return response()->json([
-                'error' => 'Solo se puede tener una tarea con timer activo'
-            ]);
-        }
-
+        $tasks_running = Task::where('running', '=', 1)->count();
         try {
             // check if given task exists
             $task = Task::findOrFail($id);
             // check if given task is running
-            if($task->running){
+            if ($task->running) {
                 return response()->json([
                     'error' => 'El timer de esta tarea ya esta corriendo',
                 ]);
@@ -80,6 +75,12 @@ class TaskController extends Controller{
                 'error' => 'La tarea no fue encontrada'
             ]);
         }
+        //Check if usere tries to run more than one task
+        if ($tasks_running >= 1) {
+            return response()->json([
+                'error' => 'Solo se puede tener una tarea con timer activo'
+            ]);
+        }
         $task->update([
             'elapsed_time' => 0,
             'running' => 1,
@@ -87,7 +88,7 @@ class TaskController extends Controller{
         ]);
         return response()->json([
             $task
-        ],200);
+        ], 200);
     }
     public function stop($id)
     {
@@ -98,9 +99,9 @@ class TaskController extends Controller{
             $current_time = time();
             $time_consumed_secs = $current_time - $start_time;
             // check if given task is not running
-            if(!$task->running){
+            if (!$task->running) {
                 return response()->json([
-                    'error' => 'El timer de esta tarea ya esta parado',
+                    'error' => 'El timer de esta tarea esta inactivo',
                 ]);
             }
         } catch (\Throwable $th) {
@@ -115,7 +116,6 @@ class TaskController extends Controller{
         ]);
         return response()->json([
             $task
-        ],200);
-
+        ], 200);
     }
 }
